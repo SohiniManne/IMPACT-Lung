@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.venv/
+
+# VS Code
+.vscode/
+
+# Environment variables
+.env
+
+# Data (recommended to ignore raw data)
+data/
+emr/
+sensors/
+imaging/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
