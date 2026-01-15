@@ -1,11 +1,9 @@
+from .config import EMR_FILE, BATCH_SIZE
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import LabelEncoder
-
-# Configuration
-EMR_FILE = './data/emr/ADMISSIONS.csv'
-BATCH_SIZE = 4
+from .config import EMR_FILE, BATCH_SIZE
 
 class ClinicalDataset(Dataset):
     def __init__(self, csv_file):
@@ -13,34 +11,29 @@ class ClinicalDataset(Dataset):
             # Load the raw clinical table
             self.df = pd.read_csv(csv_file)
             
-            # --- DEBUGGING: Print what we actually found ---
-            print(f"\n🔍 DEBUG: Columns found in CSV: {list(self.df.columns)}")
+            # Debug: Print found columns
+            # print(f"🔍 DEBUG: Columns found: {list(self.df.columns)}")
             
-            # 1. Normalize columns to uppercase to avoid case-sensitivity errors
+            # 1. Normalize columns to uppercase
             self.df.columns = [c.upper().strip() for c in self.df.columns]
             
-            # 2. Define the target columns we WANT
+            # 2. Define target columns
             target_cols = ['ADMISSION_TYPE', 'INSURANCE', 'ETHNICITY', 'DIAGNOSIS']
             
-            # 3. Check if they exist
+            # 3. Handle missing columns
             missing_cols = [c for c in target_cols if c not in self.df.columns]
             if missing_cols:
-                print(f"⚠️  WARNING: Missing columns {missing_cols}. Using placeholders.")
-                # Create fake columns for any missing ones to prevent crashing
+                # print(f"⚠️  WARNING: Missing columns {missing_cols}. Filling with placeholders.")
                 for c in missing_cols:
                     self.df[c] = "UNKNOWN"
             
-            # --- FEATURE SELECTION ---
             self.features = self.df[target_cols].copy()
-            
-            # --- DATA CLEANING ---
             self.features = self.features.fillna("UNKNOWN")
             
-            # --- ENCODING ---
+            # 4. Encode Features
             self.label_encoders = {}
             for col in self.features.columns:
                 le = LabelEncoder()
-                # Convert to string to handle mixed types
                 self.features[col] = le.fit_transform(self.features[col].astype(str))
                 self.label_encoders[col] = le
             
@@ -59,7 +52,10 @@ class ClinicalDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.data_matrix[idx]
-        return torch.tensor(row, dtype=torch.float32)
+        
+        # --- THE FIX IS HERE ---
+        # Return (Data, Label). We use 0 as a dummy label for now.
+        return torch.tensor(row, dtype=torch.float32), 0
 
 def get_emr_loader():
     dataset = ClinicalDataset(EMR_FILE)
