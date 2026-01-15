@@ -61,4 +61,6 @@ def get_emr_loader():
     dataset = ClinicalDataset(EMR_FILE)
     if len(dataset) == 0:
         return None
-    return DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    
+    # FIX: Add drop_last=True to prevent batch_size=1 errors
+    return DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
