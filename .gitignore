@@ -25,4 +25,5 @@ imaging/
 .DS_Store
 Thumbs.db
 
+# Model checkpoints
 checkpoints/
